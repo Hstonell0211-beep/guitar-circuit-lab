@@ -1,0 +1,481 @@
+:root {
+  color-scheme: light;
+  --ink: #172028;
+  --muted: #5b6872;
+  --line: #cfd7dc;
+  --surface: #ffffff;
+  --surface-soft: #f3f6f7;
+  --page: #e8edef;
+  --teal: #087f75;
+  --teal-soft: #d8f0ed;
+  --green: #15803d;
+  --green-soft: #dcfce7;
+  --amber: #a16207;
+  --amber-soft: #fef3c7;
+  --red: #b42318;
+  --red-soft: #fee4e2;
+  --blue: #1769aa;
+  --violet: #6750a4;
+  --wire: #88949c;
+  --shadow: 0 10px 26px rgba(23, 32, 40, 0.08);
+  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
+button, input, select { font: inherit; letter-spacing: 0; }
+button { cursor: pointer; }
+
+.app-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px clamp(18px, 4vw, 56px) 20px;
+  background: #192329;
+  color: white;
+  border-bottom: 4px solid #e3b341;
+}
+
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: clamp(24px, 3vw, 38px); line-height: 1.18; }
+h2 { margin-bottom: 0; font-size: 24px; }
+h3 { margin-bottom: 14px; font-size: 18px; }
+.eyebrow, .section-kicker { margin-bottom: 4px; text-transform: uppercase; font-size: 12px; font-weight: 700; color: #e3b341; }
+.section-kicker { color: var(--teal); }
+
+.header-status { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.status { display: inline-flex; align-items: center; min-height: 30px; padding: 4px 9px; border: 1px solid; border-radius: 4px; font-size: 12px; font-weight: 700; }
+.status.verified { background: #123b2b; color: #bff3d0; border-color: #2d7252; }
+.status.pending { background: #473414; color: #ffe4a0; border-color: #8a692b; }
+.status.error { background: #5b1713; color: #ffd4d1; border-color: #a33b34; }
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 2px;
+  padding: 0 clamp(18px, 4vw, 56px);
+  overflow-x: auto;
+  background: #192329;
+  border-bottom: 1px solid #334149;
+}
+
+.tab {
+  flex: 0 0 auto;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #c9d2d7;
+  font-weight: 700;
+}
+.tab:hover { color: white; }
+.tab.active { color: white; border-bottom-color: #e3b341; }
+
+main { width: min(1480px, 100%); margin: 0 auto; padding: 24px clamp(14px, 3vw, 36px) 48px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.section-heading, .subheading-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; }
+.section-heading { margin-bottom: 18px; }
+.subheading-row h3 { margin-bottom: 0; }
+.small-note { margin: 0; color: var(--muted); font-size: 13px; }
+
+.secondary-button {
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid #aab5bb;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+}
+.secondary-button:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+.secondary-button:disabled { opacity: 0.45; cursor: default; }
+.primary-button {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid #086c64;
+  border-radius: 4px;
+  background: var(--teal);
+  color: white;
+  font-weight: 800;
+}
+.primary-button:hover:not(:disabled) { background: #06665f; }
+.primary-button:disabled { opacity: 0.48; cursor: default; }
+
+.control-board {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.72fr) minmax(600px, 2.5fr);
+  gap: 12px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.mode-control { display: grid; align-content: start; gap: 9px; padding: 12px; border-right: 1px solid var(--line); }
+.control-label { display: block; font-weight: 800; }
+.contact-summary { color: var(--muted); font-size: 12px; }
+.segmented { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #9aa6ad; border-radius: 4px; overflow: hidden; }
+.segmented button { min-height: 38px; border: 0; background: var(--surface); color: var(--muted); font-weight: 700; }
+.segmented button + button { border-left: 1px solid #9aa6ad; }
+.segmented button[aria-pressed="true"] { background: var(--teal); color: white; }
+
+.pickup-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pickup-control { padding: 10px 12px; background: var(--surface-soft); border-left: 4px solid var(--pickup-color); }
+.pickup-control-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 9px; font-weight: 800; }
+.pickup-control .control-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.switch-control { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #9aa6ad; }
+.switch-control button { min-height: 34px; padding: 4px 6px; border: 0; background: white; color: var(--muted); font-size: 13px; font-weight: 700; }
+.switch-control button + button { border-left: 1px solid #9aa6ad; }
+.switch-control button[aria-pressed="true"] { background: var(--ink); color: white; }
+.mini-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; font-weight: 700; }
+
+.state-strip {
+  display: grid;
+  grid-template-columns: 1.35fr 1.2fr 0.65fr 0.9fr;
+  margin-top: 12px;
+  background: #192329;
+  color: white;
+}
+.state-strip > div { min-height: 74px; padding: 12px 16px; border-right: 1px solid #405058; }
+.state-strip > div:last-child { border-right: 0; }
+.state-label { display: block; margin-bottom: 3px; color: #8fa0aa; font-size: 12px; font-weight: 700; }
+.state-strip strong { font-size: 17px; }
+
+.signal-flow, .diagram-section, .pickup-state-section, .known-values {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.signal-paths { display: grid; gap: 9px; margin-top: 14px; }
+.signal-path { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-height: 44px; padding: 8px 10px; background: var(--surface-soft); border-left: 5px solid var(--path-color, var(--green)); }
+.path-node { padding: 3px 6px; border: 1px solid #b9c3c8; background: white; border-radius: 3px; font-weight: 700; }
+.path-node.pickup { border-color: var(--pickup-color); color: var(--pickup-color); }
+.path-arrow { color: var(--path-color, var(--green)); font-weight: 900; }
+.mute-path { border-left-color: var(--red); color: var(--red); }
+.tone-signal-path { background: #eefafa; }
+.frequency-note { color: #006b73; font-size: 12px; font-weight: 700; }
+
+.diagram-toolbar { align-items: center; }
+.diagram-live-status {
+  display: grid;
+  grid-template-columns: 0.9fr 2fr 1.1fr;
+  margin-top: 12px;
+  border: 1px solid #405058;
+  background: #192329;
+  color: white;
+}
+.diagram-live-status > div { min-height: 64px; padding: 9px 12px; border-right: 1px solid #405058; }
+.diagram-live-status > div:last-child { border-right: 0; }
+.diagram-live-status span { display: block; color: #9fadb5; font-size: 11px; font-weight: 700; }
+.diagram-live-status strong { display: block; margin-top: 2px; font-size: 13px; line-height: 1.45; }
+.diagram-scope-controls { display: grid; grid-template-columns: minmax(300px, 390px) auto minmax(190px, 250px) auto; align-items: center; gap: 8px; }
+.diagram-scope-controls label { color: var(--muted); font-size: 12px; font-weight: 800; }
+.diagram-scope-controls select { min-height: 38px; }
+.diagram-view-mode { display: grid; grid-template-columns: auto minmax(250px, 1fr); align-items: center; gap: 8px; }
+.diagram-view-mode > span { color: var(--muted); font-size: 12px; font-weight: 800; }
+.diagram-scroll { width: 100%; margin-top: 12px; overflow: auto; background: #f8fafb; border: 1px solid #aeb9bf; }
+#circuit-svg { display: block; width: max(100%, 1280px); height: auto; min-height: 650px; }
+.component-box { fill: white; stroke: #87949b; stroke-width: 1.5; rx: 4; }
+.component-box.pickup-box { fill: #f3f6f7; }
+.component-box.pending-box { fill: #fffdf4; stroke: #a16207; stroke-dasharray: 7 5; }
+.component-title { fill: var(--ink); font-size: 15px; font-weight: 800; text-anchor: middle; }
+.component-subtitle { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+.inline-switch { cursor: pointer; outline: none; }
+.inline-switch-track { fill: #e4e9ec; stroke: #65747c; stroke-width: 1.5; }
+.inline-switch-side { fill: #53616a; font-size: 9px; font-weight: 900; text-anchor: middle; pointer-events: none; }
+.inline-switch-knob { fill: #087f75; stroke: white; stroke-width: 2; transition: transform 150ms ease; pointer-events: none; }
+.inline-switch.right .inline-switch-knob { transform: translateX(60px); }
+.inline-switch-status { fill: #0f766e; font-size: 9px; font-weight: 800; text-anchor: middle; pointer-events: none; }
+.inline-switch:focus .inline-switch-track, .inline-switch:hover .inline-switch-track { fill: #fff2b3; stroke: #8a5d00; stroke-width: 2.5; }
+.terminal { fill: white; stroke: #26343c; stroke-width: 2; cursor: pointer; }
+.terminal:hover, .terminal.focused { fill: #fff2b3; stroke: #8a5d00; stroke-width: 4; }
+.terminal-label { fill: var(--ink); font-size: 11px; font-weight: 700; text-anchor: middle; pointer-events: none; }
+.coil { fill: none; stroke: var(--pickup-color); stroke-width: 4; }
+.coil.active-path { stroke: var(--pickup-color); stroke-width: 7; filter: drop-shadow(0 0 2px color-mix(in srgb, var(--pickup-color) 65%, transparent)); }
+.coil.muted-state { stroke: #9aa6ad; stroke-width: 3; opacity: 0.42; filter: none; }
+.coil.muted-state.active-path { stroke: #7d8990; stroke-width: 3; opacity: 0.52; filter: none; }
+.pot-signal-path, .tone-signal-component, .load-signal-path, .capacitor-field-path { fill: none; stroke: #7d8a91; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.pot-signal-path.active-path, .load-signal-path.active-path { stroke: #d62828; stroke-width: 6; filter: drop-shadow(0 0 2px rgba(214, 40, 40, 0.45)); }
+.pot-signal-path.muted-state, .tone-signal-component.muted-state, .load-signal-path.muted-state, .capacitor-field-path.muted-state { stroke: #9aa6ad; stroke-width: 3; opacity: 0.42; filter: none; }
+.tone-signal-component.active-path, .capacitor-field-path.active-path { stroke: #00838f; stroke-width: 5; filter: drop-shadow(0 0 2px rgba(0, 131, 143, 0.4)); }
+.active-only-view [data-component-flow].active-path.flow-role-hot { stroke: #e33a2d; filter: none; }
+.active-only-view [data-component-flow].active-path.flow-role-ground { stroke: #1479b8; filter: none; }
+.capacitor-field-path { stroke-dasharray: 2 5; }
+.pot-body { fill: #d8dde0; stroke: #53616a; stroke-width: 2; }
+.pot-shaft { fill: #f7f9fa; stroke: #53616a; stroke-width: 2; }
+.capacitor-plate, .component-lead, .jack-contact { fill: none; stroke: #53616a; stroke-width: 4; stroke-linecap: round; }
+.external-wire { fill: none; stroke: var(--route-color, var(--wire)); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.66; cursor: pointer; transition: opacity 120ms ease, stroke-width 120ms ease; }
+.external-wire:hover { stroke-width: 5; }
+.external-wire.active-path { stroke: var(--route-color, var(--wire)); stroke-width: 5.5; opacity: 1; filter: drop-shadow(0 0 2px color-mix(in srgb, var(--route-color) 65%, transparent)); }
+.active-only-view .external-wire.active-path.flow-role-hot { stroke: #e33a2d; filter: none; }
+.active-only-view .external-wire.active-path.flow-role-ground { stroke: #1479b8; filter: none; }
+.external-wire.muted-state { stroke: #9aa6ad; stroke-width: 2; opacity: 0.34; filter: none; }
+.external-wire.muted-state.active-path { stroke: #7d8990; stroke-width: 3; opacity: 0.52; filter: none; }
+.external-wire.dimmed, .internal-contact.dimmed, .terminal.dimmed, .wire-id.dimmed, .coil.dimmed { opacity: 0.09; }
+.external-wire.focused { stroke: var(--route-color, #c47f00); stroke-width: 7; opacity: 1; filter: drop-shadow(0 0 3px var(--route-color, #c47f00)); }
+.internal-contact { fill: none; stroke-linecap: round; stroke-width: 4; }
+.internal-contact.closed { stroke: #52616a; }
+.internal-contact.closed.active-path { stroke: #087f75; stroke-width: 6; }
+.active-only-view .internal-contact.closed.active-path.flow-role-hot { stroke: #e33a2d; }
+.active-only-view .internal-contact.closed.active-path.flow-role-ground { stroke: #1479b8; }
+.internal-contact.muted-state.closed { stroke: #9aa6ad; stroke-width: 3; }
+.internal-contact.muted-state.closed.active-path { stroke: #7d8990; stroke-width: 3; }
+.internal-contact.open { stroke: #b7c0c5; stroke-width: 2; stroke-dasharray: 5 5; }
+.wire-id { fill: var(--route-color, #4a5861); font-size: 10px; font-weight: 900; paint-order: stroke; stroke: #f8fafb; stroke-width: 4px; stroke-linejoin: round; cursor: pointer; }
+.wire-id.muted-state { fill: #87939a; opacity: 0.5; }
+.active-only-view .wire-id.active-path.flow-role-hot { fill: #c92f24; }
+.active-only-view .wire-id.active-path.flow-role-ground { fill: #0f679f; }
+.network-label { fill: var(--muted); font-size: 11px; font-weight: 700; text-anchor: middle; }
+.switch-direction-label { fill: #0f766e; font-size: 10px; font-weight: 800; text-anchor: middle; }
+.confirmed-network-label { fill: #b42318; font-size: 12px; font-weight: 800; text-anchor: middle; }
+.confirmed-label { fill: #0f766e; font-size: 9px; font-weight: 800; text-anchor: middle; }
+.hold-label { fill: #a16207; font-size: 10px; font-weight: 800; text-anchor: middle; }
+.ground-symbol, .out-symbol { fill: none; stroke: var(--ink); stroke-width: 2; }
+
+.flow-forward, .flow-reverse { animation: none; stroke-dasharray: none; }
+.active-only-view .flow-forward { marker-end: url(#flow-arrow); }
+.active-only-view .flow-reverse { marker-start: url(#flow-arrow); }
+.active-only-view .flow-role-hot.flow-forward { marker-end: url(#flow-arrow-hot); }
+.active-only-view .flow-role-hot.flow-reverse { marker-start: url(#flow-arrow-hot); }
+.active-only-view .flow-role-ground.flow-forward { marker-end: url(#flow-arrow-ground); }
+.active-only-view .flow-role-ground.flow-reverse { marker-start: url(#flow-arrow-ground); }
+.muted-state.flow-forward, .muted-state.flow-reverse { marker-start: none; marker-end: none; }
+#flow-arrow path { fill: #e3b341; stroke: #6b4b00; stroke-width: 0.6; }
+#flow-arrow-hot path { fill: #e33a2d; stroke: #8f211a; stroke-width: 0.6; }
+#flow-arrow-ground path { fill: #1479b8; stroke: #0a466d; stroke-width: 0.6; }
+
+.active-only-view .external-wire:not(.active-path),
+.active-only-view .internal-contact:not(.active-path),
+.active-only-view .coil:not(.active-path),
+.active-only-view [data-component-flow]:not(.active-path),
+.active-only-view .wire-id:not(.active-path) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fixed-network-focus .external-wire:not(.focused),
+.fixed-network-focus .wire-id:not(.focused) {
+  opacity: 0;
+  pointer-events: none;
+}
+.fixed-network-focus .internal-contact,
+.fixed-network-focus .coil,
+.fixed-network-focus [data-component-flow] {
+  opacity: 0.12;
+}
+
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend-line { display: inline-block; width: 28px; height: 0; border-top: 3px solid; }
+.active-line { border-image: linear-gradient(90deg, #0067c0, #7c3aed, #c2410c, #d62828) 1; border-top-width: 5px; }
+.hot-current-line { border-color: #e33a2d; border-top-width: 5px; }
+.ground-current-line { border-color: #1479b8; border-top-width: 5px; }
+.pickup-current-line { border-image: linear-gradient(90deg, #1769aa, #6750a4, #b54708) 1; border-top-width: 5px; }
+.closed-line { border-color: #52616a; }
+.inactive-line { border-image: linear-gradient(90deg, #0067c0, #7c3aed, #c2410c, #d62828) 1; }
+.open-line { border-color: #b7c0c5; border-top-style: dashed; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; background: #fff2b3; border: 2px solid #8a5d00; }
+.network-color-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 5px 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.network-color-item { display: flex; align-items: center; gap: 7px; min-height: 26px; color: var(--muted); font-size: 12px; }
+.network-color-swatch { flex: 0 0 auto; width: 28px; height: 5px; background: var(--route-color); }
+
+.welding-progress {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: #192329;
+  color: white;
+}
+.welding-progress .state-label { color: #aab8bf; }
+.reported-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: var(--green-soft);
+  border: 1px solid #8bd9a4;
+}
+.reported-progress p { margin: 3px 0 0; color: #315b3f; font-size: 13px; }
+.progress-track { height: 10px; overflow: hidden; background: #46545c; }
+.progress-track span { display: block; width: 0; height: 100%; background: #e3b341; transition: width 160ms ease; }
+.welding-demo-layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; align-items: start; }
+.welding-canvas-wrap { overflow: auto; background: #f8fafb; border: 1px solid #aeb9bf; }
+#welding-diagram { width: 100%; }
+.welding-circuit-svg { display: block; width: max(100%, 1280px); height: auto; min-height: 650px; }
+.welding-circuit-svg .external-wire { opacity: 0.86; stroke-width: 4; cursor: default; }
+.welding-circuit-svg .wire-id { cursor: default; }
+.welding-circuit-svg .terminal { cursor: default; }
+.welding-circuit-svg .welding-next-terminal { fill: #fff2b3; stroke: #9a6700; stroke-width: 5; filter: drop-shadow(0 0 3px #e3b341); }
+.welding-advice {
+  position: sticky;
+  top: 60px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.welding-advice h3, .welding-advice p { margin: 0; }
+.next-wire-endpoints { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.next-wire-endpoints .wire-endpoint { color: white; }
+.welding-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.welding-check { display: grid; gap: 3px; padding: 10px; background: var(--amber-soft); border-left: 4px solid var(--amber); }
+.welding-check span { color: #654906; font-size: 13px; }
+.welding-completed-list { display: grid; gap: 7px; max-height: 310px; margin: 7px 0 0; padding: 0; overflow: auto; list-style: none; }
+.welding-completed-list li { display: grid; grid-template-columns: 22px 1fr; gap: 7px; align-items: start; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.welding-wire-swatch { width: 20px; height: 5px; margin-top: 7px; background: var(--route-color); }
+.welding-complete-message { color: var(--green); font-weight: 800; }
+
+.pickup-state-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pickup-state-card { padding: 12px; border: 1px solid var(--line); border-top: 4px solid var(--pickup-color); }
+.pickup-state-card h4 { margin: 0 0 6px; font-size: 16px; }
+.pickup-state-card p { margin: 3px 0; }
+.pickup-status { font-weight: 800; }
+.pickup-status.working { color: var(--green); }
+.pickup-status.off { color: var(--red); }
+
+.notice { margin-bottom: 16px; padding: 12px 14px; border-left: 4px solid; }
+.notice.information { background: var(--teal-soft); border-color: var(--teal); }
+.notice.warning { background: var(--amber-soft); border-color: var(--amber); }
+
+.contact-switches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.contact-card { padding: 14px; background: var(--surface); border: 1px solid var(--line); }
+.contact-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.contact-card h3 { margin: 0; }
+.contact-card p { margin: 3px 0; color: var(--muted); }
+.contact-diagram { display: grid; grid-template-columns: repeat(2, minmax(100px, 1fr)); gap: 18px; padding: 12px; background: var(--surface-soft); }
+.dpdt-direction-note { margin-bottom: 7px; color: var(--teal); font-size: 12px; font-weight: 800; text-align: center; }
+.contact-diagram.numeric-dpdt-grid { grid-template-columns: repeat(2, minmax(100px, 1fr)); gap: 9px 18px; }
+.numeric-dpdt-grid .lug.closed-lug { background: var(--green-soft); border-color: var(--green); color: #0f5c2c; }
+.physical-pole { display: grid; grid-template-rows: 42px 22px 42px 22px 42px; align-items: center; }
+.vertical-contact { justify-self: center; width: 0; height: 22px; border-left: 5px solid var(--green); }
+.vertical-contact.open { border-left: 2px dashed #aeb8bd; }
+.lug { min-height: 42px; display: grid; place-items: center; border: 2px solid #66757d; background: white; font-weight: 800; }
+.lug.common { border-color: var(--teal); background: var(--teal-soft); }
+.contact-result { padding: 9px; background: #192329; color: white; font-weight: 700; }
+.four-pdt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.four-pdt-grid .lug { min-height: 38px; }
+.four-pdt-grid .lug.closed-lug { background: var(--green-soft); border-color: var(--green); color: #0f5c2c; }
+.pot-contact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px; background: var(--surface-soft); }
+.pot-contact-row .lug.wiper { border-color: var(--amber); background: var(--amber-soft); }
+
+.wiring-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; }
+.wire-filter { align-self: start; padding: 14px; background: var(--surface); border: 1px solid var(--line); }
+.filter-buttons { display: grid; gap: 6px; margin-top: 9px; }
+.filter-buttons button { min-height: 36px; padding: 6px 9px; text-align: left; border: 1px solid #aab5bb; background: white; }
+.filter-buttons button.active { background: var(--ink); color: white; border-color: var(--ink); }
+.wire-detail { min-height: 78px; padding: 12px 14px; background: #192329; color: white; }
+.wire-detail.empty { display: grid; place-items: center; color: #bbc6cb; }
+.wire-detail h3 { margin: 0 0 5px; }
+.wire-endpoints { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.wire-endpoint { padding: 4px 7px; background: #334149; border: 1px solid #60717a; border-radius: 3px; font-weight: 700; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-top: 0; }
+table { width: 100%; border-collapse: collapse; min-width: 760px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #dce2e5; }
+th { position: sticky; top: 46px; background: #eef2f4; font-size: 12px; }
+tbody tr { cursor: pointer; }
+tbody tr:hover, tbody tr.selected { background: #fff7d6; }
+.wire-state-active { color: var(--green); font-weight: 800; }
+.wire-state-idle { color: var(--muted); }
+.wire-number { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; }
+.wire-number::before { content: ""; width: 18px; height: 5px; background: var(--route-color); }
+
+.release-gate { display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; margin-bottom: 16px; padding: 14px; background: var(--red-soft); border: 1px solid #f1a4a0; }
+.release-gate.ready { background: var(--green-soft); border-color: #8bd9a4; }
+.release-gate p { margin: 2px 0 0; }
+.gate-icon { display: grid; place-items: center; width: 44px; height: 44px; background: var(--red); color: white; font-size: 24px; font-weight: 900; }
+.release-gate.ready .gate-icon { background: var(--green); }
+.physical-grid { display: grid; grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.4fr); gap: 16px; }
+.physical-grid > section { padding: 16px; background: var(--surface); border: 1px solid var(--line); }
+.photo-button { display: block; width: 100%; padding: 0; border: 1px solid #aeb9bf; background: #eef2f4; }
+.photo-button img { display: block; width: 100%; height: auto; }
+.measurement-list { display: grid; gap: 8px; }
+.measurement-item { display: grid; grid-template-columns: 26px 1fr; gap: 9px; padding: 9px; border: 1px solid var(--line); }
+.measurement-item input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--green); }
+.measurement-item strong, .measurement-item span { display: block; }
+.measurement-item span { color: var(--muted); font-size: 13px; }
+.known-value-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.known-value-grid label > span { display: block; margin-bottom: 5px; font-weight: 700; }
+input[type="text"], input[type="number"], select { width: 100%; min-height: 40px; padding: 7px 9px; border: 1px solid #9daab1; border-radius: 3px; background: white; color: var(--ink); }
+.known-value-grid small { display: block; margin-top: 5px; color: var(--muted); }
+.input-with-unit { display: grid; grid-template-columns: 1fr auto; align-items: center; }
+.input-with-unit span { height: 40px; display: grid; place-items: center; padding: 0 10px; background: #e7ecee; border: 1px solid #9daab1; border-left: 0; }
+.photo-dialog { width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 24px); padding: 44px 10px 10px; border: 0; background: #11191d; }
+.photo-dialog::backdrop { background: rgba(0, 0, 0, 0.82); }
+.photo-dialog img { display: block; width: 100%; height: auto; }
+.dialog-close { position: absolute; top: 7px; right: 10px; min-height: 30px; border: 1px solid #7f8e96; background: #26343c; color: white; }
+
+footer { padding: 18px clamp(18px, 4vw, 56px); background: #192329; color: #b8c4ca; font-size: 12px; }
+footer p { margin: 0; }
+
+@media (max-width: 980px) {
+  .app-header { align-items: flex-start; flex-direction: column; }
+  .header-status { justify-content: flex-start; }
+  .control-board { grid-template-columns: 1fr; }
+  .mode-control { border-right: 0; border-bottom: 1px solid var(--line); }
+  .pickup-controls { grid-template-columns: 1fr; }
+  .state-strip, .diagram-live-status { grid-template-columns: 1fr 1fr; }
+  .contact-switches { grid-template-columns: 1fr; }
+  .physical-grid { grid-template-columns: 1fr; }
+  .welding-demo-layout { grid-template-columns: 1fr; }
+  .welding-advice { position: static; }
+  .reported-progress { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  body { font-size: 14px; }
+  main { padding: 18px 10px 36px; }
+  .section-heading, .subheading-row { align-items: flex-start; flex-direction: column; }
+  .diagram-scope-controls { width: 100%; grid-template-columns: 1fr; }
+  .state-strip { grid-template-columns: 1fr; }
+  .diagram-live-status { grid-template-columns: 1fr; }
+  .diagram-live-status > div { border-right: 0; border-bottom: 1px solid #405058; }
+  .diagram-live-status > div:last-child { border-bottom: 0; }
+  .state-strip > div { min-height: auto; border-right: 0; border-bottom: 1px solid #405058; }
+  .pickup-state-cards, .known-value-grid { grid-template-columns: 1fr; }
+  .wiring-layout { grid-template-columns: 1fr; }
+  .welding-progress { grid-template-columns: 1fr; gap: 8px; }
+  .welding-actions { grid-template-columns: 1fr; }
+  .filter-buttons { grid-template-columns: repeat(2, 1fr); }
+  .diagram-section, .signal-flow, .pickup-state-section, .known-values { padding: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-forward, .flow-reverse { animation: none; }
+  .inline-switch-knob { transition: none; }
+}
+
+@media print {
+  body { background: white; }
+  .app-header, .tabs, .section-heading button, .wire-filter, footer, .notice { display: none !important; }
+  main { width: 100%; padding: 0; }
+  .tab-panel { display: none !important; }
+  #wiring { display: block !important; }
+  .wiring-layout { display: block; }
+  .wire-detail { color: black; background: white; border: 1px solid black; }
+  .table-wrap { border: 1px solid black; }
+  th { position: static; }
+  th, td { border-color: #777; }
+}

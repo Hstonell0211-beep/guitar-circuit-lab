@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>三拾音器矩阵电路实验台</title>
+  <link rel="stylesheet" href="styles.css?v=20260828-flow6">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">七开关电路 · 实验与焊接辅助</p>
+      <h1>三拾音器矩阵电路实验台</h1>
+    </div>
+    <div class="header-status" aria-label="项目状态">
+      <span id="model-status" class="status verified">互动模型：正在自检 128 种状态</span>
+      <span class="status pending">实物脚位：等待万用表确认</span>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="页面区域">
+    <button type="button" class="tab active" data-tab="simulation" aria-selected="true">运行模拟</button>
+    <button type="button" class="tab" data-tab="contacts" aria-selected="false">逐触点查看</button>
+    <button type="button" class="tab" data-tab="welding" aria-selected="false">焊接演示</button>
+    <button type="button" class="tab" data-tab="wiring" aria-selected="false">逐线焊接</button>
+    <button type="button" class="tab" data-tab="physical" aria-selected="false">实物确认</button>
+  </nav>
+
+  <main>
+    <section id="simulation" class="tab-panel active" aria-labelledby="simulation-heading">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">当前开关组合</p>
+          <h2 id="simulation-heading">直接拨动图中开关，观察完整回路</h2>
+        </div>
+        <button id="reset-state" class="secondary-button" type="button">恢复初始状态</button>
+      </div>
+
+      <div class="control-board">
+        <div class="mode-control">
+          <span class="control-label">总串联 / 并联开关 D</span>
+          <div class="segmented" role="group" aria-label="总串联或并联">
+            <button type="button" data-mode="parallel" aria-pressed="true">并联</button>
+            <button type="button" data-mode="series" aria-pressed="false">串联</button>
+          </div>
+          <span id="mode-contact-summary" class="contact-summary"></span>
+        </div>
+
+        <div id="pickup-controls" class="pickup-controls"></div>
+      </div>
+
+      <div class="state-strip" aria-live="polite">
+        <div>
+          <span class="state-label">输出状态</span>
+          <strong id="output-state"></strong>
+        </div>
+        <div>
+          <span class="state-label">正在工作的拾音器</span>
+          <strong id="active-pickups"></strong>
+        </div>
+        <div>
+          <span class="state-label">主体矩阵信号路径数量</span>
+          <strong id="path-count"></strong>
+        </div>
+        <div>
+          <span class="state-label">当前测试 / 整机模式</span>
+          <strong id="guitar-mode"></strong>
+        </div>
+      </div>
+
+      <section class="signal-flow" aria-labelledby="signal-flow-title">
+        <div class="subheading-row">
+          <h3 id="signal-flow-title">当前完整回路：从公共地出发并返回公共地</h3>
+          <span class="small-note">箭头仅表示检查回路的阅读方向，不表示交流信号永远单向流动</span>
+        </div>
+        <div id="signal-paths" class="signal-paths"></div>
+      </section>
+
+      <section class="diagram-section" aria-labelledby="diagram-title">
+        <div class="subheading-row diagram-toolbar">
+          <div>
+          <h3 id="diagram-title">可操作的7开关完整回路图</h3>
+            <p id="diagram-focus-label" class="small-note">点击图中开关拨杆即可切换；点击导线或触点可以单独追踪。</p>
+          </div>
+          <div class="diagram-scope-controls">
+            <div class="diagram-view-mode">
+              <span>图纸模式</span>
+              <div class="segmented" role="group" aria-label="图纸显示模式">
+                <button type="button" data-diagram-view="wiring" aria-pressed="false">固定焊线网络</button>
+                <button type="button" data-diagram-view="current" aria-pressed="true">当前电流回路</button>
+              </div>
+            </div>
+            <label for="diagram-scope">详细筛选</label>
+            <select id="diagram-scope">
+              <option value="all">固定焊线全部网络</option>
+              <option value="active">只看当前电流回路</option>
+              <option value="NP">琴颈 Phase 开关</option>
+              <option value="MP">琴中 Phase 开关</option>
+              <option value="BP">琴桥 Phase 开关</option>
+              <option value="A">琴颈启用 / 旁路开关 A</option>
+              <option value="B">琴中启用 / 旁路开关 B</option>
+              <option value="C">琴桥启用 / 旁路开关 C</option>
+              <option value="D">总串联 / 并联开关 D</option>
+              <option value="output">完整输出级</option>
+            </select>
+            <button id="clear-focus" class="secondary-button" type="button" disabled>退出单线追踪</button>
+          </div>
+        </div>
+        <div class="diagram-live-status" aria-live="polite">
+          <div><span>当前模式</span><strong id="diagram-mode"></strong></div>
+          <div><span>已闭合触点</span><strong id="diagram-contacts"></strong></div>
+          <div><span>回路状态</span><strong id="diagram-loop"></strong></div>
+        </div>
+        <div class="diagram-scroll" tabindex="0" aria-label="可以横向滚动的完整电路图">
+          <svg id="circuit-svg" viewBox="0 0 1580 1120" role="img" aria-labelledby="circuit-title circuit-description">
+            <title id="circuit-title">三拾音器七开关矩阵完整触点图</title>
+            <desc id="circuit-description">包含三个拾音器、两排六个可拨动小开关、一个可拨动四刀串并联开关、总音量、总音色、电容、单声道输出插座、外部负载和公共信号地。</desc>
+            <defs>
+              <marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 Z"></path>
+              </marker>
+              <marker id="flow-arrow-hot" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 Z"></path>
+              </marker>
+              <marker id="flow-arrow-ground" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 Z"></path>
+              </marker>
+            </defs>
+            <g id="component-layer"></g>
+            <g id="external-wire-layer"></g>
+            <g id="internal-contact-layer"></g>
+            <g id="terminal-layer"></g>
+            <g id="label-layer"></g>
+          </svg>
+        </div>
+        <div class="legend" aria-label="线路状态图例">
+          <span><i class="legend-line hot-current-line"></i>红色：拾音器输出端至 Tip</span>
+          <span><i class="legend-line ground-current-line"></i>蓝色：公共地侧与 Sleeve 返回</span>
+          <span><i class="legend-line pickup-current-line"></i>拾音器自身颜色：正在工作的线圈</span>
+          <span>静态箭头：从公共地检查到输出，并经负载返回地；不是直流电流方向</span>
+          <span><i class="legend-line inactive-line"></i>细彩色线：外部固定导线</span>
+          <span><i class="legend-line closed-line"></i>深灰线：开关内部闭合</span>
+          <span><i class="legend-line open-line"></i>开关断开的一侧</span>
+          <span><i class="legend-dot selected-dot"></i>当前追踪触点</span>
+        </div>
+        <div id="network-color-legend" class="network-color-legend" aria-label="电气网络颜色说明"></div>
+        <div class="notice information output-stage-note">
+          <strong>本次回路模型：</strong>A5—B4—C3—C5—总音量1—总音色1；总音量2—Tip；总音量3—公共地；总音色2—音色电容—公共地；Sleeve—公共地。动画箭头是查回路的阅读方向，不表示音频交流信号永远单向流动。
+        </div>
+      </section>
+
+      <section class="pickup-state-section" aria-labelledby="pickup-state-title">
+        <h3 id="pickup-state-title">三个拾音器当前分别发生了什么</h3>
+        <div id="pickup-state-cards" class="pickup-state-cards"></div>
+      </section>
+    </section>
+
+    <section id="contacts" class="tab-panel" aria-labelledby="contacts-heading" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">开关内部</p>
+          <h2 id="contacts-heading">逐触点导通查看</h2>
+        </div>
+      </div>
+      <div class="notice information">
+        六个小 DPDT 与大开关 D 的方向不同。按老师图逆时针旋转后的焊片侧，小开关从上到下是 <strong>3、6 / 2、5 / 1、4</strong>；换句话说，左列从下到上为 <strong>1、2、3</strong>，右列从下到上为 <strong>4、5、6</strong>。<strong>2、5</strong> 是公共触点，拨杆按本页面左右方向操作。大开关 D 保持每行三个触点的方向。
+      </div>
+      <div id="contact-switches" class="contact-switches"></div>
+    </section>
+
+    <section id="welding" class="tab-panel" aria-labelledby="welding-heading" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">从零根导线开始</p>
+          <h2 id="welding-heading">焊接步骤演示</h2>
+        </div>
+        <button id="welding-reset" class="secondary-button" type="button">重新开始</button>
+      </div>
+      <div class="notice information">
+        演示中的顺序优先处理短跳线和公共接地，再连接拾音器与长距离路由，最后连接输出级。它是施工建议，不替代每一步的万用表检查。
+      </div>
+      <div class="reported-progress">
+        <div>
+          <span class="state-label">你报告的当前实物进度</span>
+          <strong>三只拾音器零线延长已焊；部分输出总线已焊</strong>
+          <p>当前功能定义为 A5—B4—C3—C5—总音量1—总音色1，总音量2—Tip。拾音器零线目前只记为“延长接头完成”，不冒充已经接到 Phase 开关。</p>
+        </div>
+        <button id="welding-load-current" class="secondary-button" type="button">在演示中载入已焊总线</button>
+      </div>
+      <div class="welding-progress" aria-live="polite">
+        <div>
+          <span class="state-label">当前进度</span>
+          <strong id="welding-progress-text">0 / 43 根</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true"><span id="welding-progress-bar"></span></div>
+      </div>
+      <div class="welding-demo-layout">
+        <div class="welding-canvas-wrap" tabindex="0" aria-label="逐根增加导线的焊接图">
+          <div id="welding-diagram"></div>
+        </div>
+        <aside class="welding-advice" aria-labelledby="next-wire-title">
+          <span class="state-label">建议下一步</span>
+          <h3 id="next-wire-title"></h3>
+          <div id="next-wire-endpoints" class="next-wire-endpoints"></div>
+          <p id="next-wire-reason"></p>
+          <div class="welding-actions">
+            <button id="welding-add" class="primary-button" type="button">焊接这根线</button>
+            <button id="welding-undo" class="secondary-button" type="button" disabled>撤回上一根</button>
+          </div>
+          <div class="welding-check">
+            <strong>每根线焊完后</strong>
+            <span>确认两个端点导通；确认它们与相邻触点不导通。</span>
+          </div>
+          <div>
+            <span class="state-label">已经加入的导线</span>
+            <ol id="welding-completed-list" class="welding-completed-list"></ol>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="wiring" class="tab-panel" aria-labelledby="wiring-heading" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">固定外部导线</p>
+          <h2 id="wiring-heading">每根线的首端与尾端</h2>
+        </div>
+        <button id="print-wiring" class="secondary-button" type="button">打印当前清单</button>
+      </div>
+      <div class="notice warning">
+        主体矩阵端点网络已通过逻辑验证；音量、音色、电容、Sleeve和琴桥地尚未补全。只有完成万用表实物映射后，数字名称才可以对应真实金属焊脚。
+      </div>
+      <div class="wiring-layout">
+        <aside class="wire-filter" aria-label="导线筛选">
+          <span class="control-label">只看某一部分</span>
+          <div id="wire-filters" class="filter-buttons"></div>
+        </aside>
+        <div>
+          <div id="wire-detail" class="wire-detail" aria-live="polite"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>编号</th>
+                  <th>首端点</th>
+                  <th>尾端点</th>
+                  <th>所属网络</th>
+                  <th>当前状态</th>
+                </tr>
+              </thead>
+              <tbody id="wire-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="physical" class="tab-panel" aria-labelledby="physical-heading" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">焊接前门槛</p>
+          <h2 id="physical-heading">实物触点与元件测量登记</h2>
+        </div>
+        <button id="clear-measurements" class="secondary-button" type="button">清空登记</button>
+      </div>
+
+      <div class="release-gate" aria-live="polite">
+        <div class="gate-icon" id="gate-icon">!</div>
+        <div>
+          <span class="state-label">焊接放行状态</span>
+          <strong id="gate-title">尚未放行</strong>
+          <p id="gate-description"></p>
+        </div>
+      </div>
+
+      <div class="physical-grid">
+        <section class="photo-evidence" aria-labelledby="photo-title">
+          <h3 id="photo-title">收到的实际物品照片</h3>
+          <button id="photo-open" class="photo-button" type="button" aria-label="放大查看实际物品照片">
+            <img src="actual-components-contact-sheet.jpg" alt="六个六触点开关、一个十二触点开关、三个拾音器、两个电位器、电容、输出插座和导线的照片汇总">
+          </button>
+          <p class="small-note">照片用于识别元件和规划测量，不能单独证明焊脚导通关系。</p>
+        </section>
+
+        <section aria-labelledby="measurement-title">
+          <h3 id="measurement-title">必须完成的测量</h3>
+          <div id="measurement-list" class="measurement-list"></div>
+        </section>
+      </div>
+
+      <section class="known-values" aria-labelledby="known-values-title">
+        <h3 id="known-values-title">从照片看到但仍需确认的数值</h3>
+        <div class="known-value-grid">
+          <label>
+            <span>音色电容表面字样</span>
+            <input id="capacitor-marking" type="text" placeholder="例如：223J 250V">
+            <small>照片中可能是 223J，即约 0.022 µF；请以实物清晰读数为准。</small>
+          </label>
+          <label>
+            <span>总音量电位器实测总阻值</span>
+            <div class="input-with-unit"><input id="volume-resistance" type="number" min="0" step="1" placeholder="250"><span>kΩ</span></div>
+          </label>
+          <label>
+            <span>总音色电位器实测总阻值</span>
+            <div class="input-with-unit"><input id="tone-resistance" type="number" min="0" step="1" placeholder="250"><span>kΩ</span></div>
+          </label>
+          <label>
+            <span>输出插座确认</span>
+            <select id="jack-confirmation">
+              <option value="">尚未测量</option>
+              <option value="confirmed">已用插头确认 Tip 与 Sleeve</option>
+            </select>
+          </label>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="photo-dialog" class="photo-dialog">
+    <button id="photo-close" class="dialog-close" type="button" aria-label="关闭照片">关闭</button>
+    <img src="actual-components-contact-sheet.jpg" alt="实际物品照片放大图">
+  </dialog>
+
+  <footer>
+    <p>主体矩阵的128种稳定开关状态已通过拓扑验证。页面中的流动方向用于查找闭合回路；实物焊接前仍需用万用表确认每只开关的真实金属脚位。</p>
+  </footer>
+
+  <script src="app.js?v=20260828-flow6"></script>
+</body>
+</html>
