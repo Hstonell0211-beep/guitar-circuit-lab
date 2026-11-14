@@ -3,14 +3,12 @@
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const STORAGE_KEY = 'guitar-circuit-lab-measurements-v1';
-
-  const pickupDefinitions = [
-    { id: 'neck', prefix: 'NP', control: 'A', name: '琴颈拾音器', color: '#1769aa' },
-    { id: 'middle', prefix: 'MP', control: 'B', name: '琴中拾音器', color: '#6750a4' },
-    { id: 'bridge', prefix: 'BP', control: 'C', name: '琴桥拾音器', color: '#b54708' }
-  ];
+  const LANGUAGE_KEY = 'guitar-circuit-lab-language-v1';
 
   const state = {
+    // The public build is intentionally English-only. The circuit model and
+    // all switch behaviour remain unchanged.
+    language: 'en',
     mode: 'parallel',
     enabled: { neck: true, middle: false, bridge: false },
     reversed: { neck: false, middle: false, bridge: false },
@@ -22,6 +20,140 @@
     wireFilter: 'all',
     weldedWires: []
   };
+
+  // The circuit model remains language-neutral. This small phrase table only
+  // changes labels and explanations shown to the user.
+  const englishPhrases = [
+    ['三拾音器矩阵电路实验台', 'Three-Pickup Matrix Circuit Lab'],
+    ['七开关电路 · 实验与焊接辅助', 'Seven-Switch Circuit · Testing & Soldering Aid'],
+    ['互动模型：正在自检 128 种状态', 'Interactive model: checking 128 states'],
+    ['互动模型：128 种状态自检通过', 'Interactive model: all 128 states verified'],
+    ['实物脚位：等待万用表确认', 'Physical lugs: multimeter confirmation pending'],
+    ['琴颈拾音器', 'Neck Pickup'], ['琴中拾音器', 'Middle Pickup'], ['琴桥拾音器', 'Bridge Pickup'],
+    ['琴颈 Phase 开关', 'Neck Phase Switch'], ['琴中 Phase 开关', 'Middle Phase Switch'], ['琴桥 Phase 开关', 'Bridge Phase Switch'],
+    ['琴颈启用 / 旁路开关 A', 'Neck Enable / Bypass Switch A'], ['琴中启用 / 旁路开关 B', 'Middle Enable / Bypass Switch B'], ['琴桥启用 / 旁路开关 C', 'Bridge Enable / Bypass Switch C'],
+    ['总串联 / 并联开关 D', 'Master Series / Parallel Switch D'],
+    ['总音量电位器', 'Master Volume Potentiometer'], ['总音色电位器', 'Master Tone Potentiometer'],
+    ['单声道输出插座', 'Mono Output Jack'], ['音色电容', 'Tone Capacitor'],
+    ['公共信号地', 'Common Signal Ground'], ['矩阵输出总线', 'Matrix Output Bus'],
+    ['外部音箱 / 声卡输入负载', 'External Amp / Audio Interface Load'], ['外部负载', 'External Load'],
+    ['运行模拟', 'Simulation'], ['逐触点查看', 'Inspect Contacts'], ['焊接演示', 'Soldering Demo'], ['逐线焊接', 'Wire-by-Wire Soldering'], ['实物确认', 'Physical Checks'],
+    ['当前开关组合', 'Current Switch Combination'], ['直接拨动图中开关，观察完整回路', 'Toggle the switches in the diagram to inspect the complete circuit'], ['恢复初始状态', 'Restore Initial State'],
+    ['并联', 'Parallel'], ['串联', 'Series'], ['总并联', 'Master Parallel'], ['总串联', 'Master Series'],
+    ['输出状态', 'Output Status'], ['正在工作的拾音器', 'Active Pickups'], ['主体矩阵信号路径数量', 'Matrix Signal Paths'], ['当前测试 / 整机模式', 'Current Test / Guitar Mode'],
+    ['当前完整回路：从公共地出发并返回公共地', 'Complete circuit: from common ground and back to common ground'],
+    ['箭头仅表示检查回路的阅读方向，不表示交流信号永远单向流动', 'Arrows show the reading direction for checking the circuit; audio is not permanently one-way'],
+    ['可操作的7开关完整回路图', 'Interactive seven-switch circuit diagram'], ['点击图中开关拨杆即可切换；点击导线或触点可以单独追踪。', 'Toggle a switch lever to change state; click a wire or contact to trace one network.'],
+    ['图纸模式', 'Diagram View'], ['固定焊线网络', 'Fixed Wiring Network'], ['当前电流回路', 'Current Signal Path'], ['详细筛选', 'Detailed Filter'], ['退出单线追踪', 'Exit Wire Trace'],
+    ['固定焊线全部网络', 'All fixed wiring'], ['只看当前电流回路', 'Current signal path only'], ['完整输出级', 'Complete output stage'], ['当前模式', 'Current Mode'], ['已闭合触点', 'Closed Contacts'], ['回路状态', 'Circuit Status'],
+    ['包含三个拾音器、两排六个可拨动小开关、一个可拨动四刀串并联开关、总音量、总音色、电容、单声道输出插座、外部负载和公共信号地。', 'Three pickups, two rows of six-way switches, one four-pole series/parallel switch, master volume, master tone, capacitor, mono output jack, external load, and common signal ground.'],
+    ['红色：拾音器输出端至 Tip', 'Red: pickup output side to Tip'], ['蓝色：公共地侧与 Sleeve 返回', 'Blue: common ground side and Sleeve return'], ['拾音器自身颜色：正在工作的线圈', 'Pickup color: active coil'], ['静态箭头：从公共地检查到输出，并经负载返回地；不是直流电流方向', 'Static arrows: check from ground to output and back through the load; not DC current direction'], ['细彩色线：外部固定导线', 'Thin colored line: fixed external wire'], ['深灰线：开关内部闭合', 'Dark gray line: switch contact closed'], ['开关断开的一侧', 'Open side of switch'], ['当前追踪触点', 'Contact currently being traced'],
+    ['三个拾音器当前分别发生了什么', 'What is happening to each pickup'], ['开关内部', 'Inside the switches'], ['逐触点导通查看', 'Inspect contact continuity'],
+    ['从零根导线开始', 'Start with zero wires'], ['重新开始', 'Start Over'], ['焊接步骤演示', 'Soldering Step Demo'], ['在演示中载入已焊总线', 'Load reported soldered wires'], ['当前进度', 'Progress'], ['建议下一步', 'Suggested next step'], ['焊接这根线', 'Solder This Wire'], ['撤回上一根', 'Undo Last Wire'], ['每根线焊完后', 'After each wire'], ['已经加入的导线', 'Wires already added'],
+    ['固定外部导线', 'Fixed External Wires'], ['每根线的首端与尾端', 'Start and End of Every Wire'], ['打印当前清单', 'Print Current List'], ['只看某一部分', 'Filter by section'], ['编号', 'ID'], ['首端点', 'Start Point'], ['尾端点', 'End Point'], ['所属网络', 'Network'], ['当前状态', 'Current Status'],
+    ['焊接前门槛', 'Pre-Soldering Checkpoint'], ['实物触点与元件测量登记', 'Physical Contacts & Component Measurements'], ['清空登记', 'Clear Records'], ['焊接放行状态', 'Soldering Release Status'], ['尚未放行', 'Not Released'], ['收到的实际物品照片', 'Photos of the Actual Components'], ['放大查看实际物品照片', 'Enlarge the component photo'], ['照片用于识别元件和规划测量，不能单独证明焊脚导通关系。', 'Photos help identify components and plan measurements; they cannot prove lug continuity by themselves.'], ['必须完成的测量', 'Required Measurements'], ['从照片看到但仍需确认的数值', 'Values seen in photos but still to confirm'], ['输出插座确认', 'Output Jack Check'], ['尚未测量', 'Not measured yet'],
+    ['确认一个位置为 1–2、4–5；另一个位置为 2–3、5–6。', 'Confirm one position is 1–2, 4–5; the other is 2–3, 5–6.'], ['独立测量，不能仅假定与另一只同向。', 'Measure independently; do not assume it matches another switch.'], ['独立测量并在实物背面贴触点标签。', 'Measure independently and label the physical lugs.'], ['记录拨杆方向与背面焊脚方向。', 'Record lever direction and rear lug orientation.'], ['确认两组公共触点都是中间焊脚。', 'Confirm the common lug in both rows is the middle lug.'], ['逐行确认 1–2 / 2–3、4–5 / 5–6、7–8 / 8–9、10–11 / 11–12。', 'Check each row: 1–2 / 2–3, 4–5 / 5–6, 7–8 / 8–9, 10–11 / 11–12.'],
+    ['Tip 信号触点', 'Tip signal contact'], ['Sleeve 接地触点', 'Sleeve ground contact'], ['音色电容表面字样', 'Tone capacitor marking'], ['总音量电位器实测总阻值', 'Measured master volume resistance'], ['总音色电位器实测总阻值', 'Measured master tone resistance'], ['例如：223J 250V', 'e.g. 223J 250V'], ['已用插头确认 Tip 与 Sleeve', 'Tip and Sleeve confirmed with a plug'],
+    ['当前连接：1 号接矩阵输出，2 号接 Tip，3 号接公共地。', 'Current wiring: lug 1 to matrix output, lug 2 to Tip, lug 3 to common ground.'], ['当前连接：1 号接矩阵输出，2 号经音色电容接公共地，3 号空置。', 'Current wiring: lug 1 to matrix output, lug 2 to common ground through the tone capacitor, lug 3 unused.'],
+    ['已完成', 'completed'], ['正在工作', 'Active'], ['没有拾音器进入输出回路', 'No pickup is in the output circuit'], ['输出被接地：静音，没有拾音器回路', 'Output is grounded: muted, no pickup path'], ['主体矩阵静音：输出总线被直接接到公共信号地', 'Matrix muted: output bus is directly connected to common signal ground'],
+    ['用户报告已焊；', 'Reported soldered; '], ['连接在当前信号路径上', 'Connected in the current signal path'], ['当前不在有效信号路径上', 'Not in the active signal path'], ['点击清单中的一根导线，查看它的首端点、尾端点和当前作用。', 'Click a wire in the list to inspect its start point, end point, and current function.'],
+    ['总音量 2 号触角接输出插座 Tip', 'Master Volume lug 2 to output jack Tip'], ['总音量 1 号触角', 'Master Volume lug 1'], ['号触角', ' lug'], ['号触点', ' contact'], ['首端：', 'Start: '], ['尾端：', 'End: '], ['外壳焊点', 'case lug'], ['外壳', 'case'], ['接地端', 'ground terminal'], ['地', 'ground'], ['输入', 'input'], ['输出', 'output'], ['接地', 'ground'], ['回路', 'circuit'], ['路径', 'path'], ['触点', 'contact'], ['焊接', 'solder'], ['测量', 'measure'], ['确认', 'confirm'], ['工作', 'active'], ['旁路', 'bypass'], ['启用', 'on'], ['断开', 'off'], ['位置', 'position'], ['当前', 'current'], ['总', 'master'], ['音量', 'volume'], ['音色', 'tone'], ['拾音器', 'pickup'], ['琴颈', 'neck'], ['琴中', 'middle'], ['琴桥', 'bridge'], ['公共', 'common'], ['信号', 'signal'], ['矩阵', 'matrix'], ['固定', 'fixed'], ['导线', 'wire'], ['网络', 'network'], ['全部', 'all'], ['没有', 'No '], ['经', ' through '], ['返回', ' return'], ['等待', 'pending'], ['未完成前', 'Until complete'], ['实物', 'physical'], ['外壳', 'case']
+  ];
+  const englishResidualPhrases = [
+    ['项目状态', 'Project Status'], ['页面区域', 'Page Areas'], ['中文', 'Chinese'],
+    ['内部闭合：1–2、4–5、7–8、10–11', 'Closed contacts: 1–2, 4–5, 7–8, 10–11'],
+    ['内部闭合：2–3、5–6、8–9、11–12', 'Closed contacts: 2–3, 5–6, 8–9, 11–12'],
+    ['开关 A / NP', 'Switch A / NP'], ['开关 B / MP', 'Switch B / MP'], ['开关 C / BP', 'Switch C / BP'],
+    ['拾音器状态', 'Pickup Status'], ['Phase 方向', 'Phase Direction'], ['1 条', '1 path'], ['0 条拾音器路径', '0 pickup paths'],
+    ['测试009 · Master Parallel', 'Test 009 · Master Parallel'], ['测试009 · Master Series', 'Test 009 · Master Series'],
+    ['mastervolume内部滑动network', 'master volume internal wiper network'], ['输出插座 Tip', 'Output Jack Tip'], ['输出插座 Sleeve', 'Output Jack Sleeve'], ['公共信号地（回路闭合）', 'Common Signal Ground (circuit closed)'],
+    ['音色支路', 'Tone branch'], ['mastertone内部可变电阻', 'master tone variable resistor'], ['通过量取决于tone旋钮position与signal频率', 'Amount passed depends on the tone knob position and signal frequency'],
+    ['current显示：current完整circuit。点击任意wire或contact可以继续追踪单一network。', 'Current view: complete circuit. Click any wire or contact to trace one network.'],
+    ['主outputcircuit闭合；Neck Pickupactive；tone支路Parallelground', 'Main output circuit closed; Neck Pickup active; tone branch connected to ground in parallel'],
+    ['三pickup七开关matrix完整contact图', 'Complete three-pickup seven-switch contact diagram'], ['从下往上：左列 1、2、3｜右列 4、5、6', 'Bottom to top: left column 1, 2, 3 | right column 4, 5, 6'],
+    ['左', 'Left'], ['右', 'Right'], ['总串联 / 并联开关 D', 'Master Series / Parallel Switch D'], ['每行中间触点为公共触点', 'The middle contact in each row is the common contact'],
+    ['公共信号地', 'Common Signal Ground'], ['全电路基准', 'Circuit reference ground'], ['地', 'Ground'], ['外壳', 'Case'],
+    ['背面观察、触角朝下：1、2、3', 'Viewed from the back, lugs point down: 1, 2, 3'], ['背面观察、触角朝上：3、2、1', 'Viewed from the back, lugs point up: 3, 2, 1'],
+    ['1 输入 · 2 输出 · 3 接地', '1 input · 2 output · 3 ground'], ['1 输入 · 2 经电容接地 · 3 空置', '1 input · 2 to ground through capacitor · 3 unused'], ['无极性', 'Non-polarized'], ['总音色2 → 电容 → 公共地', 'Master Tone 2 → capacitor → common ground'],
+    ['单声道输出插座', 'Mono Output Jack'], ['Tip 信号 / Sleeve 返回', 'Tip signal / Sleeve return'], ['返回公共地', 'Return to common ground'], ['外部音箱 / 声卡', 'External Amp / Audio Interface'], ['吉他线另一端的输入负载', 'Input load at the other end of the guitar cable'], ['外部负载闭合 Tip–Sleeve 回路', 'External load closes the Tip–Sleeve circuit'],
+    ['上排：琴颈、琴中、琴桥拾音器控制开关 A / B / C', 'Top row: Neck, Middle, and Bridge Pickup Control Switches A / B / C'], ['下排：琴颈、琴中、琴桥三个独立 Phase 开关', 'Bottom row: three independent Neck, Middle, and Bridge Phase Switches'], ['三个拾音器；A、B 为线圈两端，屏蔽线不进入 Phase 开关', 'Three pickups; A and B are the coil ends; the shield wire does not enter the Phase switches'], ['总串联 / 并联', 'Master Series / Parallel'], ['音量、音色与输出级', 'Volume, tone, and output stage'], ['NET-OUT：A5—B4—C3—C5—总音量1—总音色1', 'NET-OUT: A5—B4—C3—C5—Master Volume 1—Master Tone 1'],
+    ['Middle Pickup Phase 第一outputnetwork', 'Middle Pickup Phase output network 1'], ['Middle Pickup Phase 第二outputnetwork', 'Middle Pickup Phase output network 2'], ['Bridge Pickup Phase 第一outputnetwork', 'Bridge Pickup Phase output network 1'], ['Bridge Pickup Phase 第二outputnetwork', 'Bridge Pickup Phase output network 2'], ['neck与middle路由network', 'Neck-to-Middle routing network'], ['mastervolumeoutput与 Tip', 'Master Volume output and Tip'], ['masterTone Capacitor支路', 'Master Tone capacitor branch'], ['middle与bridge路由network', 'Middle-to-Bridge routing network'], ['Neck Pickup引线', 'Neck Pickup lead'], ['Middle Pickup引线', 'Middle Pickup lead'], ['Bridge Pickup引线', 'Bridge Pickup lead'], ['外部音箱 / 声卡input', 'External Amp / Audio Interface input'], ['matrixoutput至mastertone支路', 'Matrix output to Master Tone branch'],
+    ['本次circuit模型：', 'Current circuit model:'], ['Neck Pickupon/bypass开关 A：2–1、5–4 闭合', 'Neck Pickup Enable/Bypass Switch A: 2–1, 5–4 closed'], ['Neck Pickup Phase 开关：2–1、5–4 闭合', 'Neck Pickup Phase Switch: 2–1, 5–4 closed'], ['检查path穿过线圈的方向：B → A', 'Check path through the coil: B → A'], ['已off，并与完整outputpath隔离', 'Off and isolated from the complete output path'], ['Middle Pickupon/bypass开关 B：2–3、5–6 闭合', 'Middle Pickup Enable/Bypass Switch B: 2–3, 5–6 closed'], ['Middle Pickup Phase 开关：2–1、5–4 闭合', 'Middle Pickup Phase Switch: 2–1, 5–4 closed'], ['Bridge Pickupon/bypass开关 C：2–3、5–6 闭合', 'Bridge Pickup Enable/Bypass Switch C: 2–3, 5–6 closed'], ['Bridge Pickup Phase 开关：2–1、5–4 闭合', 'Bridge Pickup Phase Switch: 2–1, 5–4 closed'],
+    ['Neck Pickup控制开关 A', 'Neck Pickup Control Switch A'], ['Middle Pickup控制开关 B', 'Middle Pickup Control Switch B'], ['Bridge Pickup控制开关 C', 'Bridge Pickup Control Switch C'], ['图示左档：1–2、4–5 闭合', 'Diagram left position: 1–2, 4–5 closed'], ['图示右档：2–3、5–6 闭合', 'Diagram right position: 2–3, 5–6 closed'], ['在master图中查看', 'View in the master diagram'], ['← 左档　拨杆沿页面左右移动　右档 →', '← Left position   lever moves horizontally   Right position →'], ['current内部导通：1–2；4–5', 'Current internal continuity: 1–2; 4–5'], ['current内部导通：2–3；5–6', 'Current internal continuity: 2–3; 5–6'], ['Parallel档（左档）', 'Parallel position (left)'], ['current内部导通：1–2；4–5；7–8；10–11', 'Current internal continuity: 1–2; 4–5; 7–8; 10–11'],
+    ['0 / 43 根', '0 / 43 wires'], ['三只pickup零线延长已焊；部分outputmaster线已焊', 'The three pickup ground extensions are soldered; some master output wires are soldered'], ['主体matrix与outputcircuit的 43 段wire', '43 wires in the main matrix and output circuit'], ['Neck Pickup部分', 'Neck Pickup section'], ['Middle Pickup部分', 'Middle Pickup section'], ['Bridge Pickup部分', 'Bridge Pickup section'], ['主体master路由', 'Main master routing'], ['主体Common Signal Ground', 'Main Common Signal Ground'], ['NET-OUT 主体master线', 'NET-OUT main master wires'], ['mastervolume、mastertone、电容、Tip / Sleeve 与External Load', 'Master Volume, Master Tone, capacitor, Tip / Sleeve, and External Load'], ['下一步：逐项做导通、短路和实物脚位复核。', 'Next: verify continuity, shorts, and physical lug mapping item by item.'],
+    ['项目状态', 'Project Status'], ['当前', 'Current'], ['显示', 'View'], ['完整', 'complete'], ['图纸显示模式', 'Diagram view mode'], ['内部滑动网络', 'internal wiper network'], ['输出插座', 'Output Jack'], ['闭合', 'closed'], ['支路', 'branch'], ['内部可变电阻', 'internal variable resistor'], ['通过量取决于', 'Amount passed depends on '], ['旋钮', 'knob'], ['频率', 'frequency'], ['网络', 'network'], ['触点', 'contact'], ['接地', 'ground'], ['输入', 'input'], ['输出', 'output'], ['回路', 'circuit'], ['路径', 'path'], ['开关', 'Switch'], ['方向', 'Direction'], ['状态', 'Status'], ['或', 'or'], ['条', ' paths'], ['已', 'Already '], ['经', ' through '], ['与', ' and '], ['为', ' are '], ['至', ' to '], ['从', 'From '], ['上排', 'Top row'], ['下排', 'Bottom row'], ['左列', 'left column'], ['右列', 'right column'], ['从下往上', 'Bottom to top'], ['端', ' end'], ['总', 'Master '], ['音量', 'Volume'], ['音色', 'Tone'], ['拾音器', 'Pickup'], ['琴颈', 'Neck'], ['琴中', 'Middle'], ['琴桥', 'Bridge'], ['公共', 'Common'], ['信号', 'Signal'], ['矩阵', 'Matrix'], ['固定', 'Fixed'], ['导线', 'Wire'], ['全部', 'All'], ['没有', 'No '], ['等待', 'Pending'], ['实物', 'Physical'], ['背面观察', 'Viewed from the back'], ['触角朝下', 'lugs point down'], ['触角朝上', 'lugs point up'], ['空置', 'unused'], ['无极性', 'non-polarized'], ['返回', 'return'], ['加入', 'Add '], ['根', ' wires'], ['建议', 'Suggested'], ['下一步', 'next step'], ['焊接', 'solder'], ['测量', 'measure'], ['确认', 'confirm'], ['工作', 'active'], ['旁路', 'bypass'], ['启用', 'on'], ['断开', 'off'], ['位置', 'position'], ['短路', 'shorts'], ['导通', 'continuity'], ['真实金属脚位', 'real metal lugs']
+  ];
+  englishPhrases.push(...englishResidualPhrases);
+  const englishFallbackRules = [
+    [/Parallelsignalpath/g, 'Parallel signal path'], [/mastervolume/g, 'Master Volume'], [/mastertone/g, 'Master Tone'], [/commonground/g, 'common ground'],
+    [/current/g, 'current '], [/outputcircuit/g, 'output circuit'], [/outputpath/g, 'output path'], [/outputnetwork/g, 'output network'], [/contact图/g, 'contact diagram'],
+    [/测试/g, 'Test '], [/主/g, 'Main '], [/图/g, 'diagram'], [/控制/g, 'Control '], [/第一/g, '1'], [/第二/g, '2'], [/路由/g, 'routing'], [/引线/g, 'lead'],
+    [/本次/g, 'Current '], [/检查/g, 'Check '], [/穿过/g, 'through '], [/线圈/g, 'coil'], [/隔离/g, 'isolated'], [/图示/g, 'Diagram '], [/档/g, ' position'],
+    [/从左到右为/g, 'from left to right:'], [/左档/g, 'left position'], [/右档/g, 'right position'], [/短跳线/g, 'short jumper'], [/施工/g, 'build'], [/建议/g, 'suggestion'],
+    [/你报告的/g, 'Your reported '], [/进度/g, 'progress'], [/三只/g, 'Three '], [/零线/g, 'ground wires'], [/延长/g, 'extension'], [/已焊/g, 'soldered'], [/部分/g, 'some '],
+    [/功能定义/g, 'function definition'], [/目前/g, 'currently'], [/只记/g, 'recorded only as'], [/冒充/g, 'assume'], [/接到/g, 'connect to'], [/先完成/g, 'First complete '], [/背面/g, 'back of the '],
+    [/最短/g, 'shortest'], [/端点/g, 'endpoint'], [/容易核对/g, 'easy to verify'], [/两个/g, 'two '], [/它们/g, 'they'], [/相邻/g, 'adjacent '], [/通过逻辑验证/g, 'passed logical verification'],
+    [/尚未补全/g, 'not yet complete'], [/只有完成/g, 'Only after completing '], [/数字名称/g, 'numeric names'], [/可以对应/g, 'can correspond to'], [/按老师图逆时针旋转后的/g, 'Counter-clockwise rotated drawing '], [/标记/g, 'marking'], [/上行/g, 'top row'], [/中行/g, 'middle row'], [/下行/g, 'bottom row'],
+    [/是/g, ' is '], [/和/g, ' and '], [/与/g, ' and '], [/为/g, ' are '], [/的/g, ' of '], [/不替代/g, 'does not replace '], [/每一步/g, 'each step'], [/逐项做/g, 'verify item by item: '], [/清晰抄录/g, 'copy clearly'], [/完整字样/g, 'full marking'], [/请以/g, 'use '], [/为准/g, 'as the reference'],
+    [/触角/g, 'lug'], [/滑动端/g, 'wiper'], [/旋转/g, 'rotation'], [/阻值/g, 'resistance'], [/金属底板/g, 'metal baseplate'], [/屏蔽线/g, 'shield wire'], [/直流电阻/g, 'DC resistance'], [/不要只凭/g, 'Do not rely only on '], [/颜色判断/g, 'color to identify'],
+    [/电位器/g, 'potentiometers'], [/插入插头后/g, 'After plugging in, '], [/万用表/g, 'multimeter'], [/确认/g, 'confirm'], [/每只/g, 'each'], [/真实/g, 'real'], [/脚位/g, 'lug mapping'], [/关闭/g, 'Close'], [/稳定/g, 'stable'], [/拓扑验证/g, 'topology verification'], [/流动/g, 'flow'], [/物理/g, 'physical'], [/焊前/g, 'before soldering'],
+    [/点击任意/g, 'Click any '], [/可以继续追踪/g, 'can continue tracing '], [/模型/g, 'model'], [/本次/g, 'Current '], [/在/g, 'in '], [/查看/g, 'view'], [/演示中/g, 'In the demo, '], [/顺序优先处理/g, 'the order prioritizes '], [/再/g, 'then '], [/最后/g, 'finally '], [/连/g, 'connect '], [/它/g, 'it'], [/建议/g, 'suggestion'], [/不替代/g, 'does not replace '], [/报告/g, 'report'], [/目前/g, 'currently'], [/只记为/g, 'recorded as '], [/不冒充/g, 'do not assume '], [/交叉/g, 'cross'], [/跳线/g, 'jumper'], [/近/g, 'near'], [/最容易核对/g, 'easy to verify'], [/两个/g, 'two '], [/不导通/g, 'not continuous'], [/端点名称/g, 'endpoint names'], [/尚未/g, 'not yet '], [/补全/g, 'complete'], [/实物脚位/g, 'physical lugs'], [/按/g, 'According to '], [/后的/g, ' after '], [/上行/g, 'top row'], [/中行/g, 'middle row'], [/下行/g, 'bottom row'], [/拨杆沿页面左右方向操作/g, 'move the lever left and right on the page'], [/找出/g, 'Find '], [/记录/g, 'Record '], [/不要/g, 'Do not '], [/只凭/g, 'rely only on '], [/以及/g, ' and '], [/关系/g, 'relationship'], [/两个电位器/g, 'Two potentiometers'], [/旋转方向/g, 'rotation direction'], [/中间/g, 'middle'], [/插入/g, 'insert '], [/抄录/g, 'copy '], [/可能/g, 'may be '], [/即约/g, 'approximately '], [/约/g, 'about '], [/请/g, 'please '], [/以/g, 'use '], [/为准/g, 'as the reference'], [/清楚/g, 'clearly'], [/字样/g, 'marking'], [/元件/g, 'component'], [/主体/g, 'Main '], [/已经/g, 'already '], [/通过/g, 'passed '], [/用于/g, 'used to '], [/查找/g, 'find '], [/仍需/g, 'still need to '], [/四/g, 'four'], [/页/g, 'page'], [/不能/g, 'cannot '], [/直接/g, 'directly '], [/对应/g, 'correspond to '], [/真实金属焊脚/g, 'real metal lugs'], [/屏蔽/g, 'shield'], [/颜色/g, 'color'], [/判断/g, 'identify'], [/旋钮/g, 'knob'], [/函数/g, 'function'], [/定义/g, 'definition'], [/已焊/g, 'soldered'], [/延长接头/g, 'extension joint'], [/不/g, 'not '], [/能/g, 'can '], [/连/g, 'connect '], [/且/g, 'and '], [/为/g, 'are '], [/将/g, 'will '], [/如/g, 'as '], [/下/g, 'lower'], [/上/g, 'upper'], [/左/g, 'left'], [/右/g, 'right'], [/是/g, 'is'], [/有/g, 'has '], [/表/g, 'meter'], [/约/g, 'about '], [/准/g, 'reference'], [/清/g, 'clear'], [/晰/g, ''], [/抄/g, 'copy'], [/录/g, 'record'], [/标/g, 'label'], [/题/g, 'item'], [/电/g, 'electrical'], [/气/g, ''], [/焊/g, 'solder'], [/作/g, 'operation'], [/用/g, 'use'], [/体/g, 'body'], [/的/g, ' of '], [/了/g, ' completed'], [/着/g, ''], [/第/g, ''], [/个/g, ''], [/项/g, ' items'], [/段/g, ' sections'], [/根/g, ' wires'], [/中/g, ' middle'], [/端/g, ' end'], [/点/g, ' point'], [/两/g, 'two '], [/首/g, 'start '], [/尾/g, 'end '], [/首/g, 'start '], [/尾/g, 'end '], [/上/g, 'upper'], [/下/g, 'lower'], [/旁/g, 'side'], [/路/g, 'route'], [/返/g, 'return'], [/和/g, ' and '], [/与/g, ' and '], [/及/g, ' and '], [/取/g, 'take '], [/决/g, 'decide'], [/于/g, ' on '], [/旋/g, 'rotate'], [/能/g, 'can '], [/向/g, 'direction'], [/形/g, 'form'], [/成/g, 'become'], [/流/g, 'flow'], [/动/g, 'move'], [/无/g, 'no '], [/只/g, 'only '], [/全/g, 'all'], [/三/g, 'three'], [/七/g, 'seven'], [/五/g, 'five'], [/四/g, 'four'], [/二/g, 'two'], [/一/g, 'one'], [/八/g, 'eight'], [/九/g, 'nine'], [/十/g, 'ten']
+  ];
+  englishFallbackRules.push(
+    [/箭头/g, 'arrows'], [/阅读/g, 'reading'], [/音频/g, 'audio'], [/永远/g, 'always'], [/单/g, 'single'], [/画/g, 'diagram'], [/查/g, 'check'], [/示/g, 'show'], [/交/g, 'alternating'], [/并/g, 'and '], [/种/g, 'types'], [/面/g, 'page'], [/前/g, 'before'],
+    [/内/g, 'internal '], [/部/g, 'section'], [/到/g, ' to '], [/仍/g, 'still '], [/要/g, 'need to '], [/滑/g, 'slide '], [/接/g, 'connect '], [/长/g, 'long '], [/距/g, 'distance'], [/离/g, ' away'], [/级/g, 'stage'], [/线/g, 'wire'], [/头/g, 'head'], [/完/g, 'complete'], [/最/g, 'most '], [/容/g, 'capacity'], [/映/g, 'map'], [/射/g, 'map'], [/后/g, 'after'], [/才/g, 'then '], [/金/g, 'metal '], [/属/g, 'metal '], [/脚/g, 'lugs'], [/名/g, 'name'], [/称/g, 'label'], [/老/g, 'reference '], [/师/g, 'guide'], [/逆/g, 'counter-'], [/时/g, 'clockwise'], [/针/g, 'wise'], [/拨/g, 'move '], [/杆/g, 'lever'], [/沿/g, 'along '], [/操/g, 'operate'], [/复/g, 're-'], [/核/g, 'verify'], [/则/g, 'then'], [/同/g, 'same'], [/照/g, 'photo'], [/片/g, 'photo'], [/读/g, 'read'], [/数/g, 'values']
+  );
+  englishFallbackRules.push(
+    [/^Parallel signal path.*common ground$/g, 'Parallel signal path reaches Master Volume, Tip, External Load, and Sleeve, then returns to common ground'],
+    [/^Series signal path.*common ground$/g, 'Series signal path reaches Master Volume, Tip, External Load, and Sleeve, then returns to common ground'],
+    [/Master SeriesorParallel/g, 'Master Series or Parallel'], [/Pickuponoroff/g, 'Pickup on or off'], [/PickupPhaseDirection/g, 'Pickup Phase Direction'],
+    [/matrixoutput/g, 'Matrix output'], [/Master Volume1/g, 'Master Volume 1'], [/Master Volume2/g, 'Master Volume 2'], [/Master Tone1/g, 'Master Tone 1'], [/Master Tone2/g, 'Master Tone 2'],
+    [/Master Volumeinternal wiper network/g, 'Master Volume internal wiper network'], [/Master Toneinternal variable resistor/g, 'Master Tone internal variable resistor'],
+    [/toneknobposition and signalfrequency/g, 'tone knob position and signal frequency'], [/current View：current completecircuit。Click any wireorcontactcan continue tracing singleonenetwork。/g, 'Current view: complete circuit. Click any wire or contact to trace one network.'],
+    [/Master Parallel · Test 009（M2\+F1）/g, 'Master Parallel · Test 009 (M2 + F1)'], [/Main output circuitclosed；Neck Pickupactive；Tone branchParallelground/g, 'Main output circuit closed; Neck Pickup active; Tone branch connected to ground in parallel'],
+    [/current 内部continuity/g, 'Current internal continuity'], [/diagram示Left position/g, 'Diagram left position'], [/Viewed from the back、lugs point down：From Left到Right are/g, 'Viewed from the back, lugs point down: from left to right are'], [/Viewed from the back、lugs point up：From Left到Right are/g, 'Viewed from the back, lugs point up: from left to right are'],
+    [/physical仍要usemultimeterconfirm滑move end and rotationDirection/g, 'physical hardware still requires a multimeter to confirm the wiper and rotation direction'], [/In the demo,  of the order prioritizes/g, 'In the demo, the order prioritizes'], [/connect 接pickup/g, 'connect the pickup'], [/长距离routing/g, 'long-distance routing'], [/output级/g, 'output stage'], [/Three pickupground wiresextensionAlready solder/g, 'Three pickup ground-wire extensions are already soldered'], [/some outputmaster线Already solder/g, 'some master output wires are already soldered'], [/current function definition are/g, 'Current function definition:'], [/pickupground wirescurrentlyrecorded only as are/g, 'Pickup ground wires are currently recorded only as'], [/extension接头完become/g, 'extension joint completed'], [/W07 · neck Phase cross线one/g, 'W07 · Neck Phase cross-wire 1'], [/First complete Switchback of the shortest of crossjumper/g, 'First complete the shortest cross-jumper on the back of the switch'], [/end pointnear、最easy to verify/g, 'nearby endpoints are easiest to verify'], [/Main bodymatrix end pointnetworkAlready/g, 'Main matrix endpoint network has already'], [/electrical容/g, 'capacitor'], [/multimeterphysical映射后/g, 'after physical multimeter mapping'], [/Main 体matrix/g, 'Main matrix'], [/NET-OUT Main 体master线/g, 'NET-OUT main master wires'], [/Master Volume、Master Tone、electrical容/g, 'Master Volume, Master Tone, capacitor'], [/itemscomponentmeasure/g, 'component measurements'], [/pagepage middle of  end point名称cannot directly correspond to real金属solder脚/g, 'page endpoint names cannot directly correspond to real metal lugs'], [/According to 老师diagram逆时针rotation后 of Directionmarking/g, 'According to the reference diagram after counter-clockwise rotation, the direction marking'], [/拨杆沿pagepageLeftRightDirection操operation/g, 'move the lever left and right on the page'], [/Find coiltwo  end、shield wire，并Record DC resistance/g, 'Find the two coil ends and shield wire, then record DC resistance'], [/measuremasterresistance、rotationDirection and middle滑move end/g, 'Measure master resistance, rotation direction, and the middle wiper'], [/复核Master Volume/g, 'Confirm Master Volume'], [/copy clearlycompletemarking；has electrical容meter则同时measure/g, 'Copy the full marking clearly; if a capacitor meter is available, measure it as well'], [/照片 middlemay be  is  223J/g, 'The photo may show 223J'], [/Main bodymatrix of 128种stableSwitchStatusAlready passed topology verification/g, 'The main matrix has 128 stable switch states verified by topology'], [/pagepage middle of flowDirection用于查找closedcircuit；physicalsolder前still need to usemultimeterconfirmeachSwitch of real metal lugs/g, 'The flow direction is for tracing the closed circuit; before physical soldering, use a multimeter to confirm every switch and its real metal lugs']
+  );
+  const localize = value => {
+    if (state.language !== 'en' || value === undefined || value === null) return value;
+    const translated = englishPhrases
+      .slice()
+      .sort((a, b) => b[0].length - a[0].length)
+      .reduce((text, [from, to]) => text.split(from).join(to), String(value));
+    return englishFallbackRules.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), translated);
+  };
+
+  const staticTextNodes = [];
+  const staticAttributes = [];
+  const captureStaticContent = () => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (!node.parentElement.closest('script,style')) staticTextNodes.push({ node, original: node.nodeValue });
+    }
+    document.querySelectorAll('body *').forEach(element => {
+      ['aria-label', 'alt', 'placeholder', 'title'].forEach(attribute => {
+        if (element.hasAttribute(attribute)) staticAttributes.push({ element, attribute, original: element.getAttribute(attribute) });
+      });
+    });
+  };
+  const applyStaticLanguage = () => {
+    staticTextNodes.forEach(item => { item.node.nodeValue = localize(item.original); });
+    staticAttributes.forEach(item => item.element.setAttribute(item.attribute, localize(item.original)));
+    document.documentElement.lang = state.language === 'en' ? 'en' : 'zh-CN';
+    document.title = localize('三拾音器矩阵电路实验台');
+    const toggle = document.getElementById('language-toggle');
+    if (toggle) {
+      toggle.textContent = state.language === 'en' ? '中文' : 'English';
+      toggle.setAttribute('aria-label', state.language === 'en' ? 'Switch to Chinese' : '切换到英文');
+    }
+  };
+
+  const pickupDefinitions = [
+    { id: 'neck', prefix: 'NP', control: 'A', name: '琴颈拾音器', color: '#1769aa' },
+    { id: 'middle', prefix: 'MP', control: 'B', name: '琴中拾音器', color: '#6750a4' },
+    { id: 'bridge', prefix: 'BP', control: 'C', name: '琴桥拾音器', color: '#b54708' }
+  ];
 
   const dpdtLugNumbers = { a1: '1', T1: '2', a2: '3', b1: '4', T2: '5', b2: '6' };
   const reportedCompletedWires = ['W26', 'W27', 'W28', 'W34'];
@@ -413,8 +545,24 @@
   const createElement = (tag, className, text) => {
     const el = document.createElement(tag);
     if (className) el.className = className;
-    if (text !== undefined) el.textContent = text;
+    if (text !== undefined) {
+      el.dataset.i18nSource = String(text);
+      el.textContent = localize(text);
+    }
     return el;
+  };
+
+  const setLocalizedText = (element, text) => {
+    if (element) {
+      element.dataset.i18nSource = String(text);
+      element.textContent = localize(text);
+    }
+  };
+
+  const refreshDynamicLanguage = () => {
+    document.querySelectorAll('[data-i18n-source]').forEach(element => {
+      if (!element.children.length) element.textContent = localize(element.dataset.i18nSource);
+    });
   };
 
   const initializeTabs = () => {
@@ -448,7 +596,7 @@
       enableWrap.appendChild(createElement('span', 'mini-label', '拾音器状态'));
       const enable = createElement('div', 'switch-control');
       enable.setAttribute('role', 'group');
-      enable.setAttribute('aria-label', `${pickup.name}启用或断开`);
+      enable.setAttribute('aria-label', localize(`${pickup.name}启用或断开`));
       [['on', '启用'], ['off', '断开']].forEach(([value, label]) => {
         const button = createElement('button', '', label);
         button.type = 'button';
@@ -467,7 +615,7 @@
       phaseWrap.appendChild(createElement('span', 'mini-label', 'Phase 方向'));
       const phase = createElement('div', 'switch-control');
       phase.setAttribute('role', 'group');
-      phase.setAttribute('aria-label', `${pickup.name}Phase方向`);
+      phase.setAttribute('aria-label', localize(`${pickup.name}Phase方向`));
       [['normal', '位置1'], ['reverse', '位置2']].forEach(([value, label]) => {
         const button = createElement('button', '', label);
         button.type = 'button';
@@ -516,9 +664,9 @@
         button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
       });
     });
-    document.getElementById('mode-contact-summary').textContent = state.mode === 'parallel'
+    setLocalizedText(document.getElementById('mode-contact-summary'), state.mode === 'parallel'
       ? '内部闭合：1–2、4–5、7–8、10–11'
-      : '内部闭合：2–3、5–6、8–9、11–12';
+      : '内部闭合：2–3、5–6、8–9、11–12');
   };
 
   const stateOrder = bits => {
@@ -553,22 +701,22 @@
       const contacts = closedContactsFor(pickup);
       return [`${pickup.control}:${contacts.control}`, `${pickup.prefix}:${contacts.phase}`];
     }).concat(state.mode === 'parallel' ? ['D:1–2/4–5/7–8/10–11'] : ['D:2–3/5–6/8–9/11–12']).join('；');
-    document.getElementById('diagram-mode').textContent = modeText;
-    document.getElementById('diagram-contacts').textContent = contactText;
-    document.getElementById('diagram-loop').textContent = electrical.hardGrounded
+    setLocalizedText(document.getElementById('diagram-mode'), modeText);
+    setLocalizedText(document.getElementById('diagram-contacts'), contactText);
+    setLocalizedText(document.getElementById('diagram-loop'), electrical.hardGrounded
       ? '输出被接地：静音，没有拾音器回路'
-      : `主输出回路闭合；${working.map(item => item.name).join('、')}工作；音色支路并联接地`;
+      : `主输出回路闭合；${working.map(item => item.name).join('、')}工作；音色支路并联接地`);
   };
 
   const renderStateSummary = electrical => {
     const working = pickupDefinitions.filter(pickup => electrical.pickupStatus[pickup.id].used);
     const test = getCurrentTest();
-    document.getElementById('output-state').textContent = electrical.hardGrounded
+    setLocalizedText(document.getElementById('output-state'), electrical.hardGrounded
       ? '主体矩阵静音：输出总线被直接接到公共信号地'
-      : `${state.mode === 'parallel' ? '并联' : '串联'}信号路径已经总音量、Tip、外部负载和 Sleeve 返回公共地`;
-    document.getElementById('active-pickups').textContent = working.length ? working.map(item => item.name).join('、') : '没有拾音器进入输出回路';
-    document.getElementById('path-count').textContent = electrical.hardGrounded ? '0 条拾音器路径' : `${electrical.paths.length} 条`;
-    document.getElementById('guitar-mode').textContent = `测试${test.number} · ${state.mode === 'parallel' ? '总并联' : '总串联'}`;
+      : `${state.mode === 'parallel' ? '并联' : '串联'}信号路径已经总音量、Tip、外部负载和 Sleeve 返回公共地`);
+    setLocalizedText(document.getElementById('active-pickups'), working.length ? working.map(item => item.name).join('、') : '没有拾音器进入输出回路');
+    setLocalizedText(document.getElementById('path-count'), electrical.hardGrounded ? '0 条拾音器路径' : `${electrical.paths.length} 条`);
+    setLocalizedText(document.getElementById('guitar-mode'), `测试${test.number} · ${state.mode === 'parallel' ? '总并联' : '总串联'}`);
     renderDiagramLiveStatus(electrical);
 
     const pathContainer = document.getElementById('signal-paths');
@@ -674,7 +822,7 @@
 
   const addSvgText = (x, y, value, className, layer) => {
     const el = addSvg('text', { x, y, class: className }, layer || layers.labels);
-    el.textContent = value;
+    el.textContent = localize(value);
     return el;
   };
 
@@ -715,8 +863,8 @@
       'data-inline-switch': id
     }, layers.labels);
     addSvg('rect', { x, y, width: 104, height: 28, rx: 4, class: 'inline-switch-track' }, group);
-    addSvg('text', { x: x + 22, y: y + 19, class: 'inline-switch-side' }, group).textContent = '左';
-    addSvg('text', { x: x + 82, y: y + 19, class: 'inline-switch-side' }, group).textContent = '右';
+    addSvg('text', { x: x + 22, y: y + 19, class: 'inline-switch-side' }, group).textContent = localize('左');
+    addSvg('text', { x: x + 82, y: y + 19, class: 'inline-switch-side' }, group).textContent = localize('右');
     addSvg('circle', { cx: x + 22, cy: y + 14, r: 11, class: 'inline-switch-knob' }, group);
     const status = addSvg('text', { x: x + 52, y: y + 42, class: 'inline-switch-status' }, group);
     status.dataset.inlineSwitchStatus = id;
@@ -745,9 +893,9 @@
     svg.querySelectorAll('[data-inline-switch]').forEach(group => {
       const switchState = inlineSwitchState(group.dataset.inlineSwitch);
       group.classList.toggle('right', switchState.right);
-      group.setAttribute('aria-label', `${componentNames[group.dataset.inlineSwitch]}，当前${switchState.label}，点击切换`);
+      group.setAttribute('aria-label', localize(`${componentNames[group.dataset.inlineSwitch]}，当前${switchState.label}，点击切换`));
       const status = group.querySelector('[data-inline-switch-status]');
-      if (status) status.textContent = switchState.label;
+      if (status) status.textContent = localize(switchState.label);
     });
   };
 
@@ -1082,17 +1230,17 @@
       const root = fixedWireUf.find(state.focusedTerminal);
       const ids = [...(fixedWireIdsByRoot.get(root) || [])].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
       const terminals = fixedTerminalsByRoot.get(root) || new Set();
-      focusLabel.textContent = `${terminalDisplayName(state.focusedTerminal)} 所属的固定焊接网络：${ids.join('、')}；共 ${ids.length} 根线、${terminals.size} 个端点。`;
+      setLocalizedText(focusLabel, `${terminalDisplayName(state.focusedTerminal)} 所属的固定焊接网络：${ids.join('、')}；共 ${ids.length} 根线、${terminals.size} 个端点。`);
     } else if (state.focusedNetwork) {
       const network = networkById[state.focusedNetwork];
       const selected = wires.find(wire => wire.id === state.selectedWire);
-      focusLabel.textContent = `${network ? network.label : state.focusedNetwork}${selected ? `；当前导线 ${selected.id}：${terminalDisplayName(selected.from)} → ${terminalDisplayName(selected.to)}` : ''}`;
+      setLocalizedText(focusLabel, `${network ? network.label : state.focusedNetwork}${selected ? `；当前导线 ${selected.id}：${terminalDisplayName(selected.from)} → ${terminalDisplayName(selected.to)}` : ''}`);
     } else {
       const scopeLabels = {
         all: '全部线路', active: '当前完整回路', NP: '琴颈 Phase 开关', MP: '琴中 Phase 开关', BP: '琴桥 Phase 开关',
         A: '琴颈启用 / 旁路开关 A', B: '琴中启用 / 旁路开关 B', C: '琴桥启用 / 旁路开关 C', D: '总串联 / 并联开关 D', output: '矩阵输出总线'
       };
-      focusLabel.textContent = `当前显示：${scopeLabels[state.diagramScope]}。点击任意导线或触点可以继续追踪单一网络。`;
+      setLocalizedText(focusLabel, `当前显示：${scopeLabels[state.diagramScope]}。点击任意导线或触点可以继续追踪单一网络。`);
     }
   };
 
@@ -1253,7 +1401,7 @@
     const selected = wires.find(wire => wire.id === state.selectedWire);
     if (!selected) {
       detail.className = 'wire-detail empty';
-      detail.textContent = '点击清单中的一根导线，查看它的首端点、尾端点和当前作用。';
+      setLocalizedText(detail, '点击清单中的一根导线，查看它的首端点、尾端点和当前作用。');
       return;
     }
     detail.className = 'wire-detail';
@@ -1273,7 +1421,7 @@
     clone.id = 'welding-circuit-svg';
     clone.classList.add('welding-circuit-svg');
     clone.removeAttribute('aria-labelledby');
-    clone.setAttribute('aria-label', `焊接演示，已经加入 ${state.weldedWires.length} 根外部导线`);
+    clone.setAttribute('aria-label', localize(`焊接演示，已经加入 ${state.weldedWires.length} 根外部导线`));
     clone.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
     clone.querySelectorAll('.internal-contact').forEach(element => element.remove());
     clone.querySelectorAll('.inline-switch').forEach(element => element.remove());
@@ -1295,7 +1443,7 @@
 
     const completed = state.weldedWires.length;
     const total = weldingOrder.length;
-    document.getElementById('welding-progress-text').textContent = `${completed} / ${total} 根`;
+    setLocalizedText(document.getElementById('welding-progress-text'), `${completed} / ${total} 根`);
     document.getElementById('welding-progress-bar').style.width = `${completed / total * 100}%`;
     document.getElementById('welding-undo').disabled = completed === 0;
     const addButton = document.getElementById('welding-add');
@@ -1306,19 +1454,19 @@
     const reason = document.getElementById('next-wire-reason');
     endpoints.innerHTML = '';
     if (nextWire) {
-      title.textContent = `${nextWire.id} · ${nextWire.label}`;
+      setLocalizedText(title, `${nextWire.id} · ${nextWire.label}`);
       endpoints.append(
         createElement('span', 'wire-endpoint', `首端：${terminalDisplayName(nextWire.from)}`),
         createElement('span', 'path-arrow', '→'),
         createElement('span', 'wire-endpoint', `尾端：${terminalDisplayName(nextWire.to)}`)
       );
-      reason.textContent = weldingReason(nextWire.id);
-      addButton.textContent = `加入 ${nextWire.id}`;
+      setLocalizedText(reason, weldingReason(nextWire.id));
+      setLocalizedText(addButton, `加入 ${nextWire.id}`);
     } else {
-      title.textContent = `${total} 根已确认固定导线已经全部加入`;
+      setLocalizedText(title, `${total} 根已确认固定导线已经全部加入`);
       endpoints.appendChild(createElement('span', 'welding-complete-message', '下一步：逐项做导通、短路和实物脚位复核。'));
-      reason.textContent = '演示完成不等于已经可以直接焊接；必须先完成“实物确认”页的万用表测量。';
-      addButton.textContent = '演示已完成';
+      setLocalizedText(reason, '演示完成不等于已经可以直接焊接；必须先完成“实物确认”页的万用表测量。');
+      setLocalizedText(addButton, '演示已完成');
     }
 
     const list = document.getElementById('welding-completed-list');
@@ -1425,11 +1573,11 @@
     const complete = checked === measurementDefinitions.length && fieldsReady;
     const gate = document.querySelector('.release-gate');
     gate.classList.toggle('ready', complete);
-    document.getElementById('gate-icon').textContent = complete ? '✓' : '!';
-    document.getElementById('gate-title').textContent = complete ? '测量资料齐全，等待生成最终焊接版' : '尚未放行';
-    document.getElementById('gate-description').textContent = complete
+    setLocalizedText(document.getElementById('gate-icon'), complete ? '✓' : '!');
+    setLocalizedText(document.getElementById('gate-title'), complete ? '测量资料齐全，等待生成最终焊接版' : '尚未放行');
+    setLocalizedText(document.getElementById('gate-description'), complete
       ? '实物映射项目已经登记完整。下一步需把测量结果写入最终触点图，并补齐音量、音色和输出插座线路后才能开始焊接。'
-      : `已完成 ${checked} / ${measurementDefinitions.length} 项元件测量。未完成前，页面中的端点名称不能直接对应真实金属焊脚。`;
+      : `已完成 ${checked} / ${measurementDefinitions.length} 项元件测量。未完成前，页面中的端点名称不能直接对应真实金属焊脚。`);
   };
 
   const initializePhotoDialog = () => {
@@ -1498,9 +1646,9 @@
     const status = document.getElementById('model-status');
     status.classList.toggle('verified', failures.length === 0);
     status.classList.toggle('error', failures.length > 0);
-    status.textContent = failures.length === 0
+    setLocalizedText(status, failures.length === 0
       ? '互动模型：128 种状态自检通过'
-      : `互动模型错误：${failures.length} 项`;
+      : `互动模型错误：${failures.length} 项`);
     if (failures.length) console.error('互动电路模型自检失败', failures);
     return failures;
   };
@@ -1514,6 +1662,20 @@
     renderWireTable(electrical);
     renderWeldingDemo();
   };
+
+  captureStaticContent();
+  applyStaticLanguage();
+  document.getElementById('language-toggle')?.addEventListener('click', () => {
+    state.language = state.language === 'en' ? 'zh' : 'en';
+    localStorage.setItem(LANGUAGE_KEY, state.language);
+    applyStaticLanguage();
+    refreshDynamicLanguage();
+    renderAll();
+    renderContactCards();
+    renderWireTable(buildElectricalState());
+    renderWeldingDemo();
+    updateReleaseGate();
+  });
 
   initializeTabs();
   initializeControls();
