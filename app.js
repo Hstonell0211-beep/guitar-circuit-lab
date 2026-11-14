@@ -711,9 +711,13 @@
   const renderStateSummary = electrical => {
     const working = pickupDefinitions.filter(pickup => electrical.pickupStatus[pickup.id].used);
     const test = getCurrentTest();
-    setLocalizedText(document.getElementById('output-state'), electrical.hardGrounded
-      ? '主体矩阵静音：输出总线被直接接到公共信号地'
-      : `${state.mode === 'parallel' ? '并联' : '串联'}信号路径已经总音量、Tip、外部负载和 Sleeve 返回公共地`);
+    setLocalizedText(document.getElementById('output-state'), state.language === 'en'
+      ? (electrical.hardGrounded
+        ? 'Matrix muted: output bus is directly connected to common signal ground'
+        : `${state.mode === 'parallel' ? 'Parallel' : 'Series'} signal path reaches Master Volume, Tip, External Load, and Sleeve, then returns to common ground`)
+      : (electrical.hardGrounded
+        ? '主体矩阵静音：输出总线被直接接到公共信号地'
+        : `${state.mode === 'parallel' ? '并联' : '串联'}信号路径已经总音量、Tip、外部负载和 Sleeve 返回公共地`));
     setLocalizedText(document.getElementById('active-pickups'), working.length ? working.map(item => item.name).join('、') : '没有拾音器进入输出回路');
     setLocalizedText(document.getElementById('path-count'), electrical.hardGrounded ? '0 条拾音器路径' : `${electrical.paths.length} 条`);
     setLocalizedText(document.getElementById('guitar-mode'), `测试${test.number} · ${state.mode === 'parallel' ? '总并联' : '总串联'}`);
